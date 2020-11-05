@@ -11,6 +11,7 @@ const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
     stats: {
@@ -51,7 +52,7 @@ module.exports = {
             '@utils': path.resolve(__dirname, '../src/utils/'),
             '@servers': path.resolve(__dirname, '../src/servers/'),
             '@pages': path.resolve(__dirname, '../src/pages/'),
-            '@request': path.resolve(__dirname, '../src/request.jsx'),
+            '@request': path.resolve(__dirname, '../src/request.js'),
             '@config': path.resolve(__dirname, '../src/config.js'),
             '@routeConfig': path.resolve(__dirname, '../src/routeConfig.jsx'),
             '@reducers': path.resolve(__dirname, '../src/reducers/'),
@@ -76,12 +77,19 @@ module.exports = {
                 // loader: 'babel-loader',
                 exclude: /node_modules/,
                 loader: require.resolve('babel-loader'),
-                options: { plugins: [ process.env.ENV_LWD == 'development' && require.resolve('react-refresh/babel')].filter(Boolean) }
+                options: {
+                    plugins: [
+                        process.env.ENV_LWD == 'development' &&
+                            require.resolve('react-refresh/babel')
+                    ].filter(Boolean)
+                }
             },
             {
                 test: /\.(css|less)$/,
                 use: [
-                    process.env.ENV_LWD == 'development' ? { loader: 'style-loader' } : MiniCssExtractPlugin.loader,
+                    process.env.ENV_LWD == 'development'
+                        ? { loader: 'style-loader' }
+                        : MiniCssExtractPlugin.loader,
                     {
                         loader: 'css-loader',
                         options: {
@@ -130,8 +138,10 @@ module.exports = {
         cleanWebpack: new CleanWebpackPlugin(),
         // 抽取css
         miniCssExtract: new MiniCssExtractPlugin({
-            filename: process.env.ENV_LWD == 'development' ? './css/[id].css' : './css/[id].[hash].css',
-            chunkFilename: process.env.ENV_LWD == 'development' ? './css/[id].css' : './css/[id].[hash].css',
+            filename:
+                process.env.ENV_LWD == 'development' ? './css/[id].css' : './css/[id].[hash].css',
+            chunkFilename:
+                process.env.ENV_LWD == 'development' ? './css/[id].css' : './css/[id].[hash].css',
             ignoreOrder: true
         }),
         namedModules: new webpack.NamedModulesPlugin(),
@@ -142,10 +152,7 @@ module.exports = {
         // 打包进度
         progressBarPlugin: new ProgressBarPlugin(),
         // 加载中文包
-        ContextReplacementPlugin: new webpack.ContextReplacementPlugin(
-            /moment\/locale$/,
-            /zh-cn/
-        ),
+        ContextReplacementPlugin: new webpack.ContextReplacementPlugin(/moment\/locale$/, /zh-cn/),
         CompressionPlugin: new CompressionPlugin({
             filename: '[path].gz[query]',
             algorithm: 'gzip',
@@ -162,7 +169,8 @@ module.exports = {
             { from: './src/assets/js', to: '../dist/assets/js', toType: 'dir' }
         ]),
         HotModuleReplacementPlugin: new webpack.HotModuleReplacementPlugin(),
-        ReactRefreshWebpackPlugin: new ReactRefreshWebpackPlugin()
+        ReactRefreshWebpackPlugin: new ReactRefreshWebpackPlugin(),
+        HardSourceWebpackPlugin: new HardSourceWebpackPlugin()
     },
     devServer: {
         contentBase: path.resolve(__dirname, 'dist'),
@@ -178,7 +186,7 @@ module.exports = {
         react: 'React',
         'react-dom': 'ReactDOM',
         redux: 'Redux',
-        'immutable': 'Immutable',
+        immutable: 'Immutable',
         'socket.io-client': 'io'
     }
 };
